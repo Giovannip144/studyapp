@@ -96,7 +96,7 @@ Formaat:
 
 Eisen:
 - Minimaal 8 flashcards, maximaal 15
-- Precies 8 quizvragen
+- Minimaal 10 quizvragen, maximaal 25 afhankelijk van de hoeveelheid informatie je hebt
 - Gebruik de taal van het document`;
 
     // Roep Anthropic API aan
