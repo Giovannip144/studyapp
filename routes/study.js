@@ -25,7 +25,8 @@ const roepAnthropicAan = (payload) => {
         'Content-Length': Buffer.byteLength(body)
       }
     };
-
+    
+    console.log("KEY:", process.env.ANTHROPIC_API_KEY);
     const verzoek = https.request(opties, (antwoord) => {
       let data = '';
       antwoord.on('data', (chunk) => { data += chunk; });
