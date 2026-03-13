@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow – Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .welkom-balk {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .welkom-balk h1 { font-size: 28px; letter-spacing: -0.5px; }
+    .welkom-balk h1 em { font-style: italic; color: var(--accent); }
+
+    .stats-rij {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .stat-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-waarde { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 700; }
+
+    .sectie-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .sectie-header h2 { font-size: 20px; }
+
+    .sessie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .sessie-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sessie-kaart:hover { border-color: var(--accent2); transform: translateY(-2px); }
+
+    .sessie-naam {
+      font-family: 'Fraunces', serif;
+      font-size: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sessie-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sessie-datum { font-size: 12px; color: var(--muted); }
+    .sessie-acties {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .sessie-acties .btn { flex: 1; justify-content: center; }
+
+    .delete-knop {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .delete-knop:hover { border-color: var(--accent3); color: var(--accent3); }
+
+    .laden-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .laden-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      height: 130px;
+      animation: pulsen 1.5s ease-in-out infinite;
+    }
+    @keyframes pulsen { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard" class="nav-logo">Study<span>Flow</span></a>
+    <div class="nav-links">
+      <a href="/dashboard" class="nav-link actief">Dashboard</a>
+      <a href="/studeren" class="nav-link">Studeren</a>
+      <a href="/profiel" class="nav-link">Profiel</a>
+      <button class="btn btn-secondary btn-sm" onclick="uitloggen()">Uitloggen</button>
+    </div>
+  </nav>
+
+  <div class="pagina">
+    <div class="welkom-balk">
+      <div>
+        <h1>Welkom terug, <em id="gebruiker-naam">...</em></h1>
+        <p style="color:var(--muted);font-size:14px;margin-top:4px" id="gebruiker-info">Laden...</p>
+      </div>
+      <a href="/studeren" class="btn btn-primary">+ Nieuwe sessie</a>
+    </div>
+
+    <!-- Statistieken -->
+    <div class="stats-rij">
+      <div class="stat-kaart">
+        <div class="stat-label">Sessies</div>
+        <div class="stat-waarde" id="stat-sessies">–</div>
+      </div>
+      <div class="stat-kaart">
+        <div class="stat-label">Flashcards</div>
+        <div class="stat-waarde" id="stat-flashcards">–</div>
+      </div>
+      <div class="stat-kaart">
+        <div class="stat-label">Quizzen gespeeld</div>
+        <div class="stat-waarde" id="stat-quizzen">–</div>
+      </div>
+      <div class="stat-kaart">
+        <div class="stat-label">Beste score</div>
+        <div class="stat-waarde" id="stat-score">–</div>
+      </div>
+    </div>
+
+    <!-- Mijn sessies -->
+    <div class="sectie-header">
+      <h2>Mijn studeersessies</h2>
+    </div>
+    <div id="sessies-container">
+      <div class="laden-grid">
+        <div class="laden-kaart"></div>
+        <div class="laden-kaart"></div>
+        <div class="laden-kaart"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/dashboard.js"></script>
+</body>
+</html>

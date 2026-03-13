@@ -1,0 +1,205 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ─── VARIABELEN ─────────────────────────────────────────── */
+:root {
+  --bg:       #0e0f14;
+  --surface:  #16181f;
+  --surface2: #1e2029;
+  --border:   #2a2d3a;
+  --accent:   #c8f25a;
+  --accent2:  #5a8cf2;
+  --accent3:  #f25a8c;
+  --text:     #eeedf0;
+  --muted:    #8085a0;
+  --radius:   14px;
+  --radius-sm: 8px;
+}
+
+/* ─── RESET ──────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ─── TYPOGRAFIE ─────────────────────────────────────────── */
+h1, h2, h3, h4 { font-family: 'Fraunces', serif; font-weight: 500; }
+a { color: var(--accent2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ─── KNOPPEN ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-primary   { background: var(--accent); color: #000; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,242,90,0.25); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+.btn-danger    { background: transparent; color: var(--accent3); border: 1px solid var(--accent3); }
+.btn-danger:hover { background: rgba(242,90,140,0.08); }
+.btn:disabled  { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-sm { padding: 7px 16px; font-size: 13px; }
+
+/* ─── FORMULIERELEMENTEN ─────────────────────────────────── */
+.form-groep { margin-bottom: 18px; }
+.form-groep label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.form-groep input,
+.form-groep select {
+  width: 100%;
+  padding: 11px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.form-groep input:focus,
+.form-groep select:focus { border-color: var(--accent2); }
+.form-groep input::placeholder { color: var(--muted); }
+.form-groep select option { background: var(--surface2); }
+
+/* ─── KAARTEN ────────────────────────────────────────────── */
+.kaart {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+/* ─── FOUTMELDING / SUCCES ───────────────────────────────── */
+.melding {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  margin-bottom: 16px;
+  display: none;
+}
+.melding.zichtbaar { display: block; }
+.melding.fout    { background: rgba(242,90,140,0.1); border: 1px solid rgba(242,90,140,0.3); color: #f25a8c; }
+.melding.succes  { background: rgba(200,242,90,0.1); border: 1px solid rgba(200,242,90,0.3); color: var(--accent); }
+
+/* ─── SPINNER ────────────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: draaien 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes draaien { to { transform: rotate(360deg); } }
+
+/* ─── NAVIGATIE ──────────────────────────────────────────── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(14,15,20,0.9);
+  backdrop-filter: blur(16px);
+  z-index: 100;
+}
+.nav-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 8px; }
+.nav-link {
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.nav-link:hover, .nav-link.actief { color: var(--text); background: var(--surface2); text-decoration: none; }
+
+/* ─── PAGINA CONTAINER ───────────────────────────────────── */
+.pagina { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+.pagina-sm { max-width: 480px; margin: 0 auto; padding: 40px 20px; }
+
+/* ─── BADGES ─────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge-groen  { background: rgba(200,242,90,0.12); color: var(--accent); border: 1px solid rgba(200,242,90,0.25); }
+.badge-blauw  { background: rgba(90,140,242,0.12); color: var(--accent2); border: 1px solid rgba(90,140,242,0.25); }
+.badge-roze   { background: rgba(242,90,140,0.12); color: var(--accent3); border: 1px solid rgba(242,90,140,0.25); }
+.badge-grijs  { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+/* ─── TABS ───────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 24px;
+}
+.tab-knop {
+  flex: 1;
+  padding: 9px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-knop.actief {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.tab-inhoud { display: none; }
+.tab-inhoud.actief { display: block; }
+
+/* ─── LEGE STAAT ─────────────────────────────────────────── */
+.leeg {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--muted);
+}
+.leeg-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+.leeg h3 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+.leeg p { font-size: 14px; }

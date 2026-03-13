@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow – Inloggen</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+    .auth-wrap {
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .auth-logo h1 { font-size: 32px; letter-spacing: -1px; }
+    .auth-logo h1 span { color: var(--accent); }
+    .auth-logo p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+    .auth-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 3px;
+      padding: 3px;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      margin-bottom: 28px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .auth-tab.actief { background: var(--surface); color: var(--text); }
+
+    .formulier { display: none; }
+    .formulier.actief { display: block; }
+
+    .twee-kolommen {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 16px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      margin-top: 8px;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .wissel-tekst {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .wissel-tekst a {
+      color: var(--accent2);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .wissel-tekst a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <h1>Study<span>Flow</span></h1>
+      <p>Slimmer studeren met AI</p>
+    </div>
+
+    <div class="auth-kaart">
+      <div class="auth-tabs">
+        <button class="auth-tab actief" id="tab-login" onclick="wisselTab('login')">Inloggen</button>
+        <button class="auth-tab" id="tab-registreer" onclick="wisselTab('registreer')">Registreren</button>
+      </div>
+
+      <!-- Login formulier -->
+      <div class="formulier actief" id="formulier-login">
+        <div id="login-melding" class="melding fout"></div>
+        <div class="form-groep">
+          <label for="login-email">E-mailadres</label>
+          <input type="email" id="login-email" placeholder="jij@school.nl" autocomplete="email">
+        </div>
+        <div class="form-groep">
+          <label for="login-wachtwoord">Wachtwoord</label>
+          <input type="password" id="login-wachtwoord" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary submit-btn" id="login-knop" onclick="login()">
+          Inloggen
+        </button>
+        <div class="wissel-tekst">
+          Nog geen account? <a onclick="wisselTab('registreer')">Registreer je gratis</a>
+        </div>
+      </div>
+
+      <!-- Registratie formulier -->
+      <div class="formulier" id="formulier-registreer">
+        <div id="registreer-melding" class="melding fout"></div>
+        <div class="twee-kolommen">
+          <div class="form-groep">
+            <label for="reg-naam">Volledige naam</label>
+            <input type="text" id="reg-naam" placeholder="Jan de Vries" autocomplete="name">
+          </div>
+          <div class="form-groep">
+            <label for="reg-niveau">Niveau</label>
+            <select id="reg-niveau">
+              <option value="">Kies niveau</option>
+              <option value="middelbaar">Middelbaar</option>
+              <option value="bachelor">Bachelor</option>
+              <option value="master">Master</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-groep">
+          <label for="reg-email">E-mailadres</label>
+          <input type="email" id="reg-email" placeholder="jij@school.nl" autocomplete="email">
+        </div>
+        <div class="form-groep">
+          <label for="reg-school">School / Universiteit</label>
+          <input type="text" id="reg-school" placeholder="Universiteit van Amsterdam">
+        </div>
+        <div class="form-groep">
+          <label for="reg-opleiding">Opleiding</label>
+          <input type="text" id="reg-opleiding" placeholder="Informatica">
+        </div>
+        <div class="form-groep">
+          <label for="reg-wachtwoord">Wachtwoord <span style="color:var(--muted);font-size:12px">(min. 8 tekens)</span></label>
+          <input type="password" id="reg-wachtwoord" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary submit-btn" id="registreer-knop" onclick="registreer()">
+          Account aanmaken
+        </button>
+        <div class="wissel-tekst">
+          Al een account? <a onclick="wisselTab('login')">Log hier in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/auth.js"></script>
+</body>
+</html>

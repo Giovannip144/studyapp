@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow – Profiel</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .profiel-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--accent2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent2);
+      flex-shrink: 0;
+    }
+    .profiel-naam { font-size: 24px; letter-spacing: -0.5px; }
+    .profiel-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+    .sectie-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 640px) { .sectie-grid { grid-template-columns: 1fr; } }
+
+    .sectie-titel {
+      font-size: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .gevaar-zone {
+      margin-top: 32px;
+      padding: 20px 24px;
+      background: rgba(242,90,140,0.05);
+      border: 1px solid rgba(242,90,140,0.2);
+      border-radius: var(--radius);
+    }
+    .gevaar-zone h3 { color: var(--accent3); font-size: 16px; margin-bottom: 8px; }
+    .gevaar-zone p { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard" class="nav-logo">Study<span>Flow</span></a>
+    <div class="nav-links">
+      <a href="/dashboard" class="nav-link">Dashboard</a>
+      <a href="/studeren" class="nav-link">Studeren</a>
+      <a href="/profiel" class="nav-link actief">Profiel</a>
+      <button class="btn btn-secondary btn-sm" onclick="uitloggen()">Uitloggen</button>
+    </div>
+  </nav>
+
+  <div class="pagina" style="max-width:800px">
+    <div class="profiel-header">
+      <div class="avatar" id="profiel-avatar">?</div>
+      <div>
+        <div class="profiel-naam" id="profiel-naam">Laden...</div>
+        <div class="profiel-sub" id="profiel-sub"></div>
+      </div>
+    </div>
+
+    <div id="profiel-melding" class="melding"></div>
+
+    <div class="sectie-grid">
+      <!-- Persoonsgegevens -->
+      <div class="kaart">
+        <h3 class="sectie-titel">Persoonsgegevens</h3>
+        <div class="form-groep">
+          <label for="profiel-naam-invoer">Volledige naam</label>
+          <input type="text" id="profiel-naam-invoer">
+        </div>
+        <div class="form-groep">
+          <label>E-mailadres</label>
+          <input type="email" id="profiel-email" disabled style="opacity:0.5;cursor:not-allowed">
+        </div>
+        <button class="btn btn-primary" onclick="profielOpslaan()">Opslaan</button>
+      </div>
+
+      <!-- Schoolgegevens -->
+      <div class="kaart">
+        <h3 class="sectie-titel">Schoolgegevens</h3>
+        <div class="form-groep">
+          <label for="profiel-school">School / Universiteit</label>
+          <input type="text" id="profiel-school">
+        </div>
+        <div class="form-groep">
+          <label for="profiel-opleiding">Opleiding</label>
+          <input type="text" id="profiel-opleiding">
+        </div>
+        <div class="form-groep">
+          <label for="profiel-niveau">Niveau</label>
+          <select id="profiel-niveau">
+            <option value="middelbaar">Middelbaar</option>
+            <option value="bachelor">Bachelor</option>
+            <option value="master">Master</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="schoolOpslaan()">Opslaan</button>
+      </div>
+    </div>
+
+    <!-- Wachtwoord wijzigen -->
+    <div class="kaart" style="margin-top:24px">
+      <h3 class="sectie-titel">Wachtwoord wijzigen</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div class="form-groep">
+          <label for="huidig-wachtwoord">Huidig wachtwoord</label>
+          <input type="password" id="huidig-wachtwoord" placeholder="••••••••">
+        </div>
+        <div class="form-groep">
+          <label for="nieuw-wachtwoord">Nieuw wachtwoord</label>
+          <input type="password" id="nieuw-wachtwoord" placeholder="••••••••">
+        </div>
+        <div class="form-groep">
+          <label for="bevestig-wachtwoord">Bevestig nieuw</label>
+          <input type="password" id="bevestig-wachtwoord" placeholder="••••••••">
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="wachtwoordWijzigen()">Wachtwoord wijzigen</button>
+    </div>
+
+    <!-- Gevaarzone -->
+    <div class="gevaar-zone">
+      <h3>Account verwijderen</h3>
+      <p>Dit verwijdert je account en alle bijbehorende sessies permanent. Deze actie kan niet ongedaan worden gemaakt.</p>
+      <button class="btn btn-danger btn-sm" onclick="accountVerwijderen()">Account verwijderen</button>
+    </div>
+  </div>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/profile.js"></script>
+</body>
+</html>

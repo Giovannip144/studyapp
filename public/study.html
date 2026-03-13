@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow – Studeren</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--surface);
+    }
+    .upload-zone:hover, .upload-zone.over { border-color: var(--accent); }
+    .upload-zone:hover .upload-icon { filter: none; }
+    .upload-icon { font-size: 44px; margin-bottom: 14px; display: block; filter: grayscale(1) opacity(0.5); transition: filter 0.2s; }
+    .upload-titel { font-family: 'Fraunces', serif; font-size: 24px; margin-bottom: 6px; }
+    .upload-sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+    .laden-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px;
+      text-align: center;
+      display: none;
+    }
+    .laden-groot { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: draaien 0.8s linear infinite; margin: 0 auto 20px; }
+    .laden-stap { font-size: 13px; color: var(--accent); margin-top: 16px; }
+
+    /* Resultaten */
+    .bestand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* Notities */
+    .notities-inhoud {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #d0d0e0;
+      white-space: pre-wrap;
+      max-height: 560px;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .notities-inhoud::-webkit-scrollbar { width: 4px; }
+    .notities-inhoud::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* Flashcards */
+    .fc-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent2);
+      border-radius: var(--radius);
+      padding: 28px;
+      min-height: 160px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+    .fc-kaart.omgedraaid { border-left-color: var(--accent); background: var(--surface2); }
+    .fc-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .fc-tekst { font-size: 16px; line-height: 1.5; }
+    .fc-hint { font-size: 11px; color: var(--muted); position: absolute; bottom: 14px; right: 18px; }
+    .fc-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; }
+    .fc-paginering { font-size: 13px; color: var(--muted); min-width: 60px; text-align: center; }
+    .rond-knop { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .rond-knop:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    /* Quiz */
+    .quiz-voortgang-balk { flex: 1; height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .quiz-voortgang-vulling { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s; }
+    .vraag-kaart { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 16px; }
+    .vraag-nummer { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+    .vraag-tekst { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; line-height: 1.4; }
+    .opties-grid { display: grid; gap: 10px; }
+    .optie-knop { width: 100%; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
+    .optie-knop:hover:not(:disabled) { border-color: var(--accent2); background: rgba(90,140,242,0.05); }
+    .optie-knop.goed { border-color: var(--accent); background: rgba(200,242,90,0.08); color: var(--accent); }
+    .optie-knop.fout { border-color: var(--accent3); background: rgba(242,90,140,0.08); color: var(--accent3); }
+    .optie-letter { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+    .uitleg-kaart { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-top: 14px; font-size: 14px; line-height: 1.6; display: none; }
+    .uitleg-kaart.zichtbaar { display: block; }
+
+    /* Score */
+    .score-kaart { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 48px; text-align: center; }
+    .score-getal { font-family: 'Fraunces', serif; font-size: 64px; font-weight: 700; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+    .score-label { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+
+    /* Opslaan knop */
+    .opslaan-balk {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard" class="nav-logo">Study<span>Flow</span></a>
+    <div class="nav-links">
+      <a href="/dashboard" class="nav-link">Dashboard</a>
+      <a href="/studeren" class="nav-link actief">Studeren</a>
+      <a href="/profiel" class="nav-link">Profiel</a>
+      <button class="btn btn-secondary btn-sm" onclick="uitloggen()">Uitloggen</button>
+    </div>
+  </nav>
+
+  <div class="pagina" style="max-width:860px">
+
+    <!-- Upload sectie -->
+    <div id="upload-sectie">
+      <label for="bestand-invoer" style="display:block;cursor:pointer">
+        <div class="upload-zone" id="drop-zone">
+          <span class="upload-icon">📄</span>
+          <div class="upload-titel">Sleep je PDF hierheen</div>
+          <div class="upload-sub">of klik hier om een bestand te kiezen</div>
+          <span class="btn btn-primary">Bestand kiezen</span>
+        </div>
+      </label>
+      <input type="file" id="bestand-invoer" accept=".pdf" style="display:none">
+      <div id="upload-melding" class="melding fout" style="margin-top:12px"></div>
+    </div>
+
+    <!-- Laden sectie -->
+    <div class="laden-kaart" id="laden-sectie">
+      <div class="laden-groot"></div>
+      <div style="font-family:'Fraunces',serif;font-size:20px">PDF wordt geanalyseerd…</div>
+      <div style="color:var(--muted);font-size:14px;margin-top:4px">Even geduld</div>
+      <div class="laden-stap" id="laden-stap">PDF inlezen…</div>
+    </div>
+
+    <!-- Resultaten sectie -->
+    <div id="resultaten-sectie" style="display:none">
+      <div class="opslaan-balk">
+        <div class="bestand-badge">📄 <span id="bestand-naam"></span></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="resetApp()">✕ Nieuwe PDF</button>
+          <button class="btn btn-primary btn-sm" id="opslaan-knop" onclick="sessieopslaan()">💾 Opslaan</button>
+        </div>
+      </div>
+      <div id="opslaan-melding" class="melding"></div>
+
+      <div class="tabs">
+        <button class="tab-knop actief" onclick="wisselTab('notities')" id="tab-notities">📝 Samenvatting</button>
+        <button class="tab-knop" onclick="wisselTab('flashcards')" id="tab-flashcards">🃏 Flashcards</button>
+        <button class="tab-knop" onclick="wisselTab('quiz')" id="tab-quiz">⚡ Quiz</button>
+      </div>
+
+      <!-- Notities -->
+      <div class="tab-inhoud actief kaart" id="inhoud-notities" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Samenvatting</span>
+        </div>
+        <div class="notities-inhoud" id="notities-inhoud"></div>
+      </div>
+
+      <!-- Flashcards -->
+      <div class="tab-inhoud" id="inhoud-flashcards">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;font-style:italic">Klik op een kaart om het antwoord te zien</p>
+        <div class="fc-kaart" id="fc-kaart" onclick="fcOmdraaien()">
+          <div class="fc-label" id="fc-label">Vraag</div>
+          <div class="fc-tekst" id="fc-tekst"></div>
+          <div class="fc-hint" id="fc-hint">klik om te onthullen →</div>
+        </div>
+        <div class="fc-nav">
+          <button class="rond-knop" onclick="fcNavigeer(-1)">‹</button>
+          <span class="fc-paginering" id="fc-paginering">1 / 1</span>
+          <button class="rond-knop" onclick="fcNavigeer(1)">›</button>
+        </div>
+      </div>
+
+      <!-- Quiz -->
+      <div class="tab-inhoud" id="inhoud-quiz">
+        <div id="quiz-container"></div>
+        <div class="score-kaart" id="score-kaart" style="display:none">
+          <div class="score-getal" id="score-getal">0/0</div>
+          <div class="score-label">correct beantwoord</div>
+          <button class="btn btn-secondary" onclick="startQuiz()" style="margin-right:8px">Opnieuw proberen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/study.js"></script>
+</body>
+</html>
