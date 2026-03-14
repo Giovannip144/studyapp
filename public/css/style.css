@@ -132,6 +132,8 @@ a:hover { text-decoration: underline; }
   font-weight: 700;
   color: var(--text);
   text-decoration: none;
+  position: relative;
+  z-index: 201;
 }
 .nav-logo span { color: var(--accent); }
 .nav-links { display: flex; align-items: center; gap: 8px; }
@@ -144,6 +146,155 @@ a:hover { text-decoration: underline; }
   transition: all 0.2s;
 }
 .nav-link:hover, .nav-link.actief { color: var(--text); background: var(--surface2); text-decoration: none; }
+
+/* ─── HAMBURGER KNOP ─────────────────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  gap: 5px;
+  position: relative;
+  z-index: 201;
+  transition: border-color 0.2s;
+}
+.hamburger:hover { border-color: var(--accent2); }
+.hamburger-lijn {
+  width: 18px;
+  height: 1.5px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+/* Hamburger → kruis animatie */
+.hamburger.open .hamburger-lijn:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.hamburger.open .hamburger-lijn:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.hamburger.open .hamburger-lijn:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+
+/* ─── MOBIEL FULLSCREEN MENU ─────────────────────────────── */
+.mobiel-menu {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.mobiel-menu.open {
+  pointer-events: all;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Achtergrond rasterpatroon */
+.mobiel-menu::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Lichte gloed in het midden */
+.mobiel-menu::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(90,140,242,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.mobiel-nav-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0 32px;
+}
+
+.mobiel-nav-link {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 24px;
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: var(--radius);
+  text-align: center;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  letter-spacing: -0.3px;
+  /* Staggered inkomst animatie per link */
+  opacity: 0;
+  transform: translateY(10px);
+}
+.mobiel-menu.open .mobiel-nav-link { opacity: 1; transform: translateY(0); }
+.mobiel-menu.open .mobiel-nav-link:nth-child(1) { transition: all 0.25s ease 0.06s, color 0.2s, background 0.2s, border-color 0.2s; }
+.mobiel-menu.open .mobiel-nav-link:nth-child(2) { transition: all 0.25s ease 0.10s, color 0.2s, background 0.2s, border-color 0.2s; }
+.mobiel-menu.open .mobiel-nav-link:nth-child(3) { transition: all 0.25s ease 0.14s, color 0.2s, background 0.2s, border-color 0.2s; }
+.mobiel-menu.open .mobiel-nav-link:nth-child(4) { transition: all 0.25s ease 0.18s, color 0.2s, background 0.2s, border-color 0.2s; }
+.mobiel-menu.open .mobiel-nav-link:nth-child(5) { transition: all 0.25s ease 0.22s, color 0.2s, background 0.2s, border-color 0.2s; }
+
+.mobiel-nav-link:hover, .mobiel-nav-link.actief {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border);
+}
+.mobiel-nav-link.actief { color: var(--accent2); border-color: rgba(90,140,242,0.25); }
+
+.mobiel-uitlog {
+  margin-top: 24px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.25s ease 0.26s;
+}
+.mobiel-menu.open .mobiel-uitlog {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .nav { padding: 14px 20px; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  body.menu-open { overflow: hidden; }
+}
 
 /* ─── PAGINA CONTAINER ───────────────────────────────────── */
 .pagina { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }

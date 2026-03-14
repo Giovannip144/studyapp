@@ -320,7 +320,25 @@
       <a href="/profiel" class="nav-link">Profiel</a>
       <button class="btn btn-secondary btn-sm" onclick="uitloggen()">Uitloggen</button>
     </div>
+    <button class="hamburger" id="hamburger" onclick="wisselMenu()" aria-label="Menu">
+      <span class="hamburger-lijn"></span>
+      <span class="hamburger-lijn"></span>
+      <span class="hamburger-lijn"></span>
+    </button>
   </nav>
+
+  <!-- Mobiel fullscreen menu -->
+  <div class="mobiel-menu" id="mobiel-menu">
+    <nav class="mobiel-nav-links">
+      <a href="/dashboard" class="mobiel-nav-link" >Dashboard</a>
+      <a href="/studeren" class="mobiel-nav-link">Studeren</a>
+      <a href="/ontdek" class="mobiel-nav-link actief">Ontdek</a>
+      <a href="/profiel" class="mobiel-nav-link">Profiel</a>
+    </nav>
+    <div class="mobiel-uitlog">
+      <button class="btn btn-secondary" onclick="uitloggen()">Uitloggen</button>
+    </div>
+  </div>
 
   <div class="pagina">
     <div class="ontdek-hero">
@@ -380,5 +398,6 @@
 
   <script src="/js/api.js"></script>
   <script src="/js/ontdek.js"></script>
+  <script src="/js/nav.js"></script>
 </body>
 </html>
