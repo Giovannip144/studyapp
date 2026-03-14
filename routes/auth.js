@@ -2,8 +2,10 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
+const axios = require("axios");
 
 const router = express.Router();
+
 
 /**
  * Genereer een JWT-token voor een gebruiker.
@@ -21,7 +23,25 @@ const maakToken = (id) => {
  * Verwacht: naam, email, wachtwoord, school, opleiding, niveau
  */
 router.post('/registreer', async (req, res) => {
+
+    const ip =
+  req.headers["x-forwarded-for"]?.split(",")[0] ||
+  req.socket.remoteAddress ||
+  req.ip;
+
+  let geo = {};
+
+
   try {
+     // IP locatie ophalen
+    try {
+      const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+      geo = response.data;
+      console.log(geo)
+    } catch (err) {
+      console.warn("Geo lookup mislukt:", err.message);
+    }
+
     const { naam, email, wachtwoord, school, opleiding, niveau } = req.body;
 
     // Valideer verplichte velden
@@ -39,6 +59,7 @@ router.post('/registreer', async (req, res) => {
         fout: 'Wachtwoord moet minimaal 8 tekens zijn.'
       });
     }
+    
 
     // Controleer of e-mail al in gebruik is
     const bestaatAl = await User.findOne({ email: email.toLowerCase() });
@@ -56,7 +77,14 @@ router.post('/registreer', async (req, res) => {
       wachtwoordHash: wachtwoord,
       school,
       opleiding,
-      niveau
+      niveau,
+
+       registratieLocatie: {
+        ip: ip,
+        land: geo?.country_name || "Onbekend",
+        regio: geo?.region || "Onbekend",
+        stad: geo?.city || "Onbekend"
+      }
     });
 
     await gebruiker.save();

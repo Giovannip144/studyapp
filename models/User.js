@@ -57,6 +57,13 @@ const userSchema = new mongoose.Schema({
     default: ''
   },
 
+  registratieLocatie: {
+    ip: String,
+    land: String,
+    regio: String,
+    stad: String
+  },
+
   // Aanmaakdatum
   aangemaaktOp: {
     type: Date,

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow – Ontdek</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .ontdek-hero {
+      text-align: center;
+      padding: 48px 0 40px;
+    }
+    .ontdek-hero h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      letter-spacing: -1px;
+      margin-bottom: 10px;
+    }
+    .ontdek-hero h1 em { font-style: italic; color: var(--accent2); }
+    .ontdek-hero p { color: var(--muted); font-size: 15px; }
+
+    /* Zoek & filter balk */
+    .filter-balk {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 12px;
+      align-items: end;
+    }
+    @media (max-width: 700px) {
+      .filter-balk { grid-template-columns: 1fr 1fr; }
+      .filter-balk .zoek-groep { grid-column: 1 / -1; }
+    }
+
+    .zoek-groep { position: relative; }
+    .zoek-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 15px;
+      pointer-events: none;
+    }
+    .zoek-invoer {
+      width: 100%;
+      padding: 11px 16px 11px 40px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .zoek-invoer:focus { border-color: var(--accent2); }
+    .zoek-invoer::placeholder { color: var(--muted); }
+
+    .filter-select {
+      padding: 11px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      min-width: 140px;
+    }
+    .filter-select:focus { border-color: var(--accent2); }
+    .filter-select option { background: var(--surface2); }
+
+    .reset-filters {
+      padding: 11px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .reset-filters:hover { border-color: var(--accent3); color: var(--accent3); }
+
+    /* Resultaten teller */
+    .resultaten-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .resultaten-teller { font-size: 13px; color: var(--muted); }
+
+    /* Sessie grid */
+    .sessie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .sessie-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+    .sessie-kaart:hover { border-color: var(--accent2); transform: translateY(-2px); }
+
+    .sessie-titel {
+      font-family: 'Fraunces', serif;
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .auteur-rij {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .auteur-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent2);
+      flex-shrink: 0;
+    }
+    .auteur-info { display: flex; flex-direction: column; gap: 1px; }
+    .auteur-naam { font-size: 13px; font-weight: 500; }
+    .auteur-school { font-size: 11px; color: var(--muted); }
+
+    .sessie-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .sessie-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-item { display: flex; align-items: center; gap: 5px; }
+
+    .sessie-acties {
+      display: flex;
+      gap: 8px;
+    }
+    .sessie-acties .btn { flex: 1; justify-content: center; font-size: 13px; }
+
+    /* Preview modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 680px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-titel { font-family: 'Fraunces', serif; font-size: 18px; }
+    .modal-sluiten {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-sluiten:hover { border-color: var(--accent3); color: var(--accent3); }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-body::-webkit-scrollbar { width: 4px; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Preview flashcard in modal */
+    .preview-fc {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent2);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .preview-fc-vraag { color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+
+    /* Reacties */
+    .reactie-invoer-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+    .reactie-avatar-klein {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent2);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .reactie-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      resize: none;
+      min-height: 72px;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+    .reactie-textarea:focus { border-color: var(--accent2); }
+    .reactie-textarea::placeholder { color: var(--muted); }
+
+    .reactie-item {
+      display: flex;
+      gap: 10px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      animation: fadeIn 0.2s ease;
+    }
+    .reactie-item:last-child { border-bottom: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Laden skeleton */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .skeleton-kaart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      height: 200px;
+      animation: pulsen 1.5s ease-in-out infinite;
+    }
+    @keyframes pulsen { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/dashboard" class="nav-logo">Study<span>Flow</span></a>
+    <div class="nav-links">
+      <a href="/dashboard" class="nav-link">Dashboard</a>
+      <a href="/studeren" class="nav-link">Studeren</a>
+      <a href="/ontdek" class="nav-link actief">Ontdek</a>
+      <a href="/profiel" class="nav-link">Profiel</a>
+      <button class="btn btn-secondary btn-sm" onclick="uitloggen()">Uitloggen</button>
+    </div>
+  </nav>
+
+  <div class="pagina">
+    <div class="ontdek-hero">
+      <h1>Ontdek <em>sessies</em> van andere studenten</h1>
+      <p>Leer van flashcards en samenvattingen gedeeld door je medestudenten</p>
+    </div>
+
+    <!-- Filter balk -->
+    <div class="filter-balk">
+      <div class="zoek-groep">
+        <span class="zoek-icon">🔍</span>
+        <input type="text" class="zoek-invoer" id="zoek-invoer" placeholder="Zoek op titel, school of opleiding…" oninput="filterSessies()">
+      </div>
+      <select class="filter-select" id="filter-niveau" onchange="filterSessies()">
+        <option value="">Alle niveaus</option>
+        <option value="middelbaar">Middelbaar</option>
+        <option value="bachelor">Bachelor</option>
+        <option value="master">Master</option>
+      </select>
+      <select class="filter-select" id="filter-opleiding" onchange="filterSessies()">
+        <option value="">Alle opleidingen</option>
+      </select>
+      <button class="reset-filters" onclick="resetFilters()">✕ Wis filters</button>
+    </div>
+
+    <!-- Resultaten -->
+    <div class="resultaten-info">
+      <span class="resultaten-teller" id="resultaten-teller">Laden…</span>
+    </div>
+
+    <div id="sessies-container">
+      <div class="skeleton-grid">
+        <div class="skeleton-kaart"></div>
+        <div class="skeleton-kaart"></div>
+        <div class="skeleton-kaart"></div>
+        <div class="skeleton-kaart"></div>
+        <div class="skeleton-kaart"></div>
+        <div class="skeleton-kaart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview modal -->
+  <div class="modal-overlay" id="modal" style="display:none" onclick="sluitModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-titel" id="modal-titel">Sessie preview</div>
+        <button class="modal-sluiten" onclick="sluitModalDirect()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="sluitModalDirect()" style="flex:1;justify-content:center">Sluiten</button>
+        <button class="btn btn-primary" id="modal-studeren-knop" style="flex:1;justify-content:center">Oefenen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ontdek.js"></script>
+</body>
+</html>

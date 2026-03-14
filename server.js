@@ -54,6 +54,7 @@ mongoose.connection.on('reconnected', () => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/sessies', require('./routes/sessions'));
 app.use('/api/studeren', require('./routes/study'));
+app.use('/api/reacties', require('./routes/reacties'));
 
 // Health check endpoint voor Railway/monitoring
 app.get('/api/status', (req, res) => {
@@ -70,6 +71,9 @@ app.get('/dashboard', (req, res) => {
 });
 app.get('/studeren', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'study.html'));
+});
+app.get('/ontdek', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ontdek.html'));
 });
 app.get('/profiel', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'profile.html'));
