@@ -1,6 +1,7 @@
 const express = require('express');
 const Session = require('../models/Session');
 const authMiddleware = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -161,6 +162,7 @@ router.post('/', authMiddleware, async (req, res) => {
     });
 
     await sessie.save();
+    logger.info('SESSIE', 'Nieuwe sessie opgeslagen', { gebruiker: req.gebruiker.email, titel: sessie.titel, flashcards: sessie.flashcards.length, quiz: sessie.quiz.length });
 
     res.status(201).json({
       succes: true,
@@ -213,6 +215,7 @@ router.put('/:id/delen', authMiddleware, async (req, res) => {
 
     sessie.isOpenbaar = isOpenbaar;
     await sessie.save();
+    logger.info('SESSIE', `Sessie ${isOpenbaar ? 'openbaar' : 'privé'} gezet`, { gebruiker: req.gebruiker.email, sessieId: req.params.id });
 
     res.json({
       succes: true,
@@ -294,6 +297,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 
     await Session.findByIdAndDelete(req.params.id);
+    logger.info('SESSIE', 'Sessie verwijderd', { gebruiker: req.gebruiker.email, sessieId: req.params.id });
 
     res.json({
       succes: true,

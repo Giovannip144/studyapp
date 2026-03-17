@@ -3,6 +3,8 @@ const https = require('https');
 const authMiddleware = require('../middleware/auth');
 const pdfParse = require("pdf-parse");
 const router = express.Router();
+const logger = require('../utils/logger');
+
 
 
 /**
@@ -118,6 +120,8 @@ router.post('/analyseer', authMiddleware, async (req, res) => {
 
   return data.content.map(b => b.text || '').join('');
 });
+
+    logger.info('STUDEREN', 'PDF analyse gestart', { gebruiker: req.gebruiker.email, bestand: bestandsnaam });
 
 const analyses = await Promise.all(chunkPromises);
 
@@ -257,6 +261,7 @@ ${prompt}
     }
 
     console.log(`✅ Analyse klaar: ${resultaat.flashcards?.length} flashcards`);
+    logger.info('STUDEREN', 'PDF analyse voltooid', { gebruiker: req.gebruiker.email, bestand: bestandsnaam, flashcards: resultaat.flashcards?.length, quiz: resultaat.quiz?.length });
 
     res.json({
       succes: true,

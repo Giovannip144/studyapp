@@ -81,6 +81,27 @@
       text-decoration: none;
     }
     .wissel-tekst a:hover { text-decoration: underline; }
+
+    /* 2FA verificatie scherm */
+    .verifieer-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .verifieer-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+    .verifieer-titel {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .verifieer-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -112,6 +133,40 @@
         </button>
         <div class="wissel-tekst">
           Nog geen account? <a onclick="wisselTab('registreer')">Registreer je gratis</a>
+        </div>
+      </div>
+
+      <!-- 2FA Verificatie scherm -->
+      <div class="formulier" id="formulier-verifieer">
+        <div class="verifieer-header">
+          <div class="verifieer-icon">🔐</div>
+          <div class="verifieer-titel">Verificatie vereist</div>
+          <div class="verifieer-sub" id="verifieer-sub">
+            We hebben een 6-cijferige code verstuurd naar je emailadres.
+          </div>
+        </div>
+        <div id="verifieer-melding" class="melding fout"></div>
+        <div class="form-groep">
+          <label for="verifieer-code">Verificatiecode</label>
+          <input
+            type="text"
+            id="verifieer-code"
+            placeholder="123456"
+            maxlength="6"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            style="font-size:24px;letter-spacing:8px;text-align:center;font-weight:600"
+          >
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">De code is 10 minuten geldig</div>
+        </div>
+        <button class="btn btn-primary submit-btn" id="verifieer-knop" onclick="verifieer()">
+          Bevestigen
+        </button>
+        <div class="wissel-tekst" style="margin-top:12px">
+          Geen code ontvangen? <a id="opnieuw-knop" onclick="stuurOpnieuw()">Stuur opnieuw</a>
+        </div>
+        <div class="wissel-tekst" style="margin-top:6px">
+          <a onclick="wisselTab('login')" style="font-size:13px">← Terug naar inloggen</a>
         </div>
       </div>
 

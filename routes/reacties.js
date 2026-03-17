@@ -2,6 +2,7 @@ const express = require('express');
 const Reactie = require('../models/Reactie');
 const Session = require('../models/Session');
 const authMiddleware = require('../middleware/auth');
+const logger = require('../utils/logger');
 
 const router = express.Router();
 
@@ -101,6 +102,7 @@ router.post('/:sessieId', authMiddleware, async (req, res) => {
     });
 
     await reactie.save();
+    logger.info('REACTIE', 'Reactie geplaatst', { gebruiker: req.gebruiker.email, sessieId: req.params.sessieId });
 
     // Stuur terug met gebruikersgegevens (voor directe weergave)
     await reactie.populate('gebruiker', 'naam school opleiding niveau');
@@ -150,6 +152,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 
     await Reactie.findByIdAndDelete(req.params.id);
+    logger.info('REACTIE', 'Reactie verwijderd', { gebruiker: req.gebruiker.email, reactieId: req.params.id });
 
     res.json({
       succes: true,

@@ -3,60 +3,67 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const logger = require('./utils/logger');
+const bewaker = require('./utils/bewaker');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────────────────────
 
-// CORS instellen (staat verzoeken toe van alle origins voor lokaal testen)
 app.use(cors());
-
-// JSON body parser met verhoogde limiet voor PDF base64 data
 app.use(express.json({ limit: '50mb' }));
-
-// Statische bestanden serveren vanuit de public map
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 🔒 Beveiligingsbewaker — controleert elk request op blokkades en rate limits
+app.use(bewaker.middleware);
+
+// Log elke inkomende HTTP request
+app.use(logger.httpMiddleware);
 
 // ─── DATABASE VERBINDING ──────────────────────────────────────────────────────
 
-/**
- * Maak verbinding met MongoDB Atlas.
- * Herprobeert automatisch bij verbindingsverlies via mongoose instellingen.
- */
 const verbindMongoDB = async () => {
   try {
-    if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI ontbreekt in omgevingsvariabelen');
-    }
-
+    if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI ontbreekt in omgevingsvariabelen');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB verbonden');
-
+    logger.info('SERVER', 'MongoDB verbonden');
   } catch (err) {
-    console.error('❌ MongoDB verbindingsfout:', err.message);
-    console.error('   Controleer je MONGODB_URI in het .env bestand');
-    process.exit(1); // Stop de server als de database niet bereikbaar is
+    logger.error('SERVER', 'MongoDB verbindingsfout', { fout: err.message });
+    process.exit(1);
   }
 };
 
-// Log mongoose verbindingsstatussen
-mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️  MongoDB verbinding verbroken');
-});
-mongoose.connection.on('reconnected', () => {
-  console.log('✅ MongoDB herverbonden');
-});
+mongoose.connection.on('disconnected', () => logger.warn('SERVER', 'MongoDB verbinding verbroken'));
+mongoose.connection.on('reconnected',  () => logger.info('SERVER', 'MongoDB herverbonden'));
+
+// ─── ADMIN MIDDLEWARE ─────────────────────────────────────────────────────────
+
+/**
+ * Middleware die admin endpoints beveiligt met ADMIN_SECRET.
+ */
+const adminAuth = (req, res, next) => {
+  const secret = process.env.ADMIN_SECRET;
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!secret || token !== secret) {
+    logger.warn('SERVER', 'Ongeautoriseerde toegang tot admin endpoint', {
+      ip: (req.ip || '').replace('::ffff:', ''),
+      url: req.url
+    });
+    return res.status(403).json({ succes: false, fout: 'Geen toegang.' });
+  }
+  next();
+};
 
 // ─── ROUTES ───────────────────────────────────────────────────────────────────
 
-// API routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/sessies', require('./routes/sessions'));
+app.use('/api/auth',     require('./routes/auth'));
+app.use('/api/sessies',  require('./routes/sessions'));
 app.use('/api/studeren', require('./routes/study'));
 app.use('/api/reacties', require('./routes/reacties'));
+app.use('/api/scores',   require('./routes/scores'));
 
-// Health check endpoint voor Railway/monitoring
+// Health check
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'ok',
@@ -65,47 +72,103 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Alle andere GET verzoeken sturen naar de juiste HTML pagina
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+// ─── ADMIN ENDPOINTS ──────────────────────────────────────────────────────────
+
+/**
+ * GET /api/admin/logs?type=app&regels=100
+ * Geeft de laatste logregels terug.
+ */
+app.get('/api/admin/logs', adminAuth, (req, res) => {
+  const type = req.query.type === 'error' ? 'error' : 'app';
+  const regels = Math.min(parseInt(req.query.regels) || 100, 500);
+  const logRegels = logger.leesLog(type, regels);
+  res.json({ succes: true, type, regels: logRegels.length, log: logRegels });
 });
-app.get('/studeren', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'study.html'));
+
+/**
+ * GET /api/admin/blokkades
+ * Geeft alle actieve IP-blokkades terug.
+ */
+app.get('/api/admin/blokkades', adminAuth, (req, res) => {
+  const nu = Date.now();
+  const actief = [];
+
+  bewaker.geblokkeerdeIPs.forEach((info, ip) => {
+    if (info.tot > nu) {
+      actief.push({
+        ip,
+        reden: info.reden,
+        geblokkerdOp: info.geblokkerdOp,
+        tot: new Date(info.tot).toISOString(),
+        nogMinuten: Math.ceil((info.tot - nu) / 60000)
+      });
+    }
+  });
+
+  logger.info('SERVER', 'Admin: blokkadelijst opgevraagd', { aantalActief: actief.length });
+  res.json({ succes: true, aantalActief: actief.length, blokkades: actief });
 });
-app.get('/ontdek', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'ontdek.html'));
+
+/**
+ * DELETE /api/admin/blokkades/:ip
+ * Hef een blokkade handmatig op voor een specifiek IP.
+ */
+app.delete('/api/admin/blokkades/:ip', adminAuth, (req, res) => {
+  const ip = decodeURIComponent(req.params.ip);
+  const opgeheven = bewaker.deblokkeerIP(ip);
+
+  if (!opgeheven) {
+    return res.status(404).json({ succes: false, fout: `IP ${ip} staat niet op de blokkadelijst.` });
+  }
+
+  res.json({ succes: true, bericht: `Blokkade voor ${ip} opgeheven.` });
 });
-app.get('/profiel', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'profile.html'));
+
+/**
+ * POST /api/admin/blokkades
+ * Blokkeer handmatig een IP-adres.
+ * Verwacht: { ip, reden, minuten }
+ */
+app.post('/api/admin/blokkades', adminAuth, (req, res) => {
+  const { ip, reden, minuten = 60 } = req.body;
+  if (!ip) return res.status(400).json({ succes: false, fout: 'IP is verplicht.' });
+
+  bewaker.blokkeerIP(ip, reden || 'Handmatig geblokkeerd via admin', minuten * 60 * 1000);
+  res.json({ succes: true, bericht: `IP ${ip} geblokkeerd voor ${minuten} minuten.` });
 });
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
+
+// Pagina routes
+app.get('/dashboard',   (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
+app.get('/studeren',    (req, res) => res.sendFile(path.join(__dirname, 'public', 'study.html')));
+app.get('/ontdek',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'ontdek.html')));
+app.get('/quest',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'quest.html')));
+app.get('/profiel',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
+app.get('/geblokkeerd', (req, res) => res.sendFile(path.join(__dirname, 'public', 'geblokkeerd.html')));
+app.get('*',            (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 
 // ─── GLOBALE FOUTAFHANDELING ──────────────────────────────────────────────────
 
-/**
- * Vang alle onbehandelde fouten op en stuur een nette foutmelding terug.
- * Voorkomt dat gevoelige foutinformatie naar de client lekt.
- */
 app.use((err, req, res, next) => {
-  console.error('Onbehandelde fout:', err.message);
-  res.status(500).json({
-    succes: false,
-    fout: 'Er is een onverwachte fout opgetreden.'
-  });
+  logger.error('SERVER', 'Onbehandelde fout', { fout: err.message, url: req.url });
+  res.status(500).json({ succes: false, fout: 'Er is een onverwachte fout opgetreden.' });
 });
 
 // ─── SERVER STARTEN ───────────────────────────────────────────────────────────
 
 const start = async () => {
   await verbindMongoDB();
-
   app.listen(PORT, () => {
+    logger.info('SERVER', `StudyFlow gestart op poort ${PORT}`);
+    logger.info('BEWAKER', `Beveiligingsbewaker actief — max ${bewaker.CONFIG.MAX_REQUESTS_PER_MINUUT} req/min, ${bewaker.CONFIG.MAX_MISLUKTE_LOGINS} login pogingen`);
     console.log('\n========================================');
     console.log(`✅ StudyFlow draait op http://localhost:${PORT}`);
+    console.log(`🔒 Bewaker actief`);
     console.log('========================================\n');
   });
 };
+
+process.on('uncaughtException',  (err) => logger.error('SERVER', 'Ongecatchte uitzondering', { fout: err.message }));
+process.on('unhandledRejection', (err) => logger.error('SERVER', 'Onbehandelde promise rejection', { fout: String(err) }));
+process.on('SIGTERM', () => { logger.info('SERVER', 'Server gestopt via SIGTERM'); process.exit(0); });
 
 start();
