@@ -124,8 +124,17 @@ const updateLaadStap = (tekst) => {
 const toonResultaten = () => {
   document.getElementById('bestand-naam').textContent = huidigeSessie.bestandsnaam;
 
-  // Notities
-  document.getElementById('notities-inhoud').textContent = huidigeSessie.samenvatting;
+  // Samenvatting als HTML renderen
+  const inhoud = document.getElementById('notities-inhoud');
+  inhoud.innerHTML = huidigeSessie.samenvatting || '';
+
+  // Reset bewerkingsmodus
+  bewerkModus = false;
+  inhoud.contentEditable = 'false';
+  document.getElementById('editor-toolbar').style.display = 'none';
+  document.getElementById('editor-footer').style.display = 'none';
+  document.getElementById('samenvatting-opslaan-knop').style.display = 'none';
+  document.getElementById('bewerk-knop').textContent = '✏️ Bewerken';
 
   // Flashcards
   fcIndex = 0;
@@ -137,6 +146,207 @@ const toonResultaten = () => {
 
   toonSectie('resultaten');
 };
+
+// ─── EDITOR LOGICA ────────────────────────────────────────
+
+let bewerkModus = false;
+let origineeleSamenvatting = '';
+let opgeslagenSelectie = null;
+
+/**
+ * Wissel tussen lees- en bewerkingsmodus voor de samenvatting.
+ */
+const wisselBewerkModus = () => {
+  bewerkModus = !bewerkModus;
+  const inhoud = document.getElementById('notities-inhoud');
+  const toolbar = document.getElementById('editor-toolbar');
+  const footer = document.getElementById('editor-footer');
+  const opslaanKnop = document.getElementById('samenvatting-opslaan-knop');
+  const bewerkKnop = document.getElementById('bewerk-knop');
+
+  if (bewerkModus) {
+    origineeleSamenvatting = inhoud.innerHTML;
+    inhoud.contentEditable = 'true';
+    inhoud.focus();
+    toolbar.style.display = 'flex';
+    footer.style.display = 'flex';
+    opslaanKnop.style.display = 'inline-flex';
+    bewerkKnop.style.display = 'none';
+  } else {
+    inhoud.contentEditable = 'false';
+    toolbar.style.display = 'none';
+    footer.style.display = 'none';
+    opslaanKnop.style.display = 'none';
+    bewerkKnop.style.display = 'inline-flex';
+    bewerkKnop.textContent = '✏️ Bewerken';
+  }
+};
+
+/**
+ * Annuleer de bewerking en herstel de originele samenvatting.
+ */
+const annuleerBewerking = () => {
+  document.getElementById('notities-inhoud').innerHTML = origineeleSamenvatting;
+  bewerkModus = false;
+  wisselBewerkModus();
+};
+
+/**
+ * Voer een document.execCommand uit op de editor.
+ * @param {string} commando - execCommand naam
+ * @param {string} [waarde] - optionele waarde
+ */
+const pasToe = (commando, waarde = null) => {
+  document.getElementById('notities-inhoud').focus();
+  document.execCommand(commando, false, waarde);
+};
+
+/**
+ * Toon de link invoeg modal.
+ * Slaat de huidige tekstselectie op zodat die na het modal sluiten hersteld kan worden.
+ */
+const toonLinkModal = () => {
+  // Sla selectie op
+  const sel = window.getSelection();
+  if (sel.rangeCount > 0) opgeslagenSelectie = sel.getRangeAt(0).cloneRange();
+
+  // Vul tekstveld met geselecteerde tekst
+  const geselecteerd = sel.toString();
+  document.getElementById('link-tekst').value = geselecteerd;
+  document.getElementById('link-url').value = '';
+  document.getElementById('link-modal').classList.add('toon');
+  setTimeout(() => document.getElementById('link-url').focus(), 100);
+};
+
+/**
+ * Toon de afbeelding invoeg modal.
+ */
+const toonAfbeeldingModal = () => {
+  const sel = window.getSelection();
+  if (sel.rangeCount > 0) opgeslagenSelectie = sel.getRangeAt(0).cloneRange();
+
+  document.getElementById('afbeelding-url').value = '';
+  document.getElementById('afbeelding-bijschrift').value = '';
+  document.getElementById('afbeelding-modal').classList.add('toon');
+  setTimeout(() => document.getElementById('afbeelding-url').focus(), 100);
+};
+
+/** Sluit alle modals */
+const sluitModals = () => {
+  document.getElementById('link-modal').classList.remove('toon');
+  document.getElementById('afbeelding-modal').classList.remove('toon');
+};
+
+/**
+ * Voeg een link in op de opgeslagen cursorpositie.
+ */
+const voegLinkIn = () => {
+  const tekst = document.getElementById('link-tekst').value.trim();
+  const url = document.getElementById('link-url').value.trim();
+
+  if (!url) { alert('Vul een URL in.'); return; }
+
+  const editor = document.getElementById('notities-inhoud');
+  editor.focus();
+
+  // Herstel opgeslagen selectie
+  if (opgeslagenSelectie) {
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(opgeslagenSelectie);
+  }
+
+  const html = `<a href="${escHtml(url)}" target="_blank" rel="noopener">${escHtml(tekst || url)}</a>`;
+  document.execCommand('insertHTML', false, html);
+
+  sluitModals();
+};
+
+/**
+ * Voeg een afbeelding in op de opgeslagen cursorpositie.
+ */
+const voegAfbeeldingIn = () => {
+  const url = document.getElementById('afbeelding-url').value.trim();
+  const bijschrift = document.getElementById('afbeelding-bijschrift').value.trim();
+
+  if (!url) { alert('Vul een afbeelding URL in.'); return; }
+
+  const editor = document.getElementById('notities-inhoud');
+  editor.focus();
+
+  if (opgeslagenSelectie) {
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(opgeslagenSelectie);
+  }
+
+  const html = bijschrift
+    ? `<figure><img src="${escHtml(url)}" alt="${escHtml(bijschrift)}"><figcaption>${escHtml(bijschrift)}</figcaption></figure>`
+    : `<img src="${escHtml(url)}" alt="Afbeelding">`;
+
+  document.execCommand('insertHTML', false, html);
+  sluitModals();
+};
+
+/**
+ * Sla de aangepaste samenvatting op in de database.
+ * Alleen mogelijk als de sessie al opgeslagen is.
+ */
+const slaatSamenvattingOp = async () => {
+  const knop = document.getElementById('samenvatting-opslaan-knop');
+  const nieuweSamenvatting = document.getElementById('notities-inhoud').innerHTML;
+
+  if (!huidigeSessie._id) {
+    huidigeSessie.samenvatting = nieuweSamenvatting;
+    toonMelding('opslaan-melding', '✅ Wijzigingen bewaard. Klik op "Opslaan" om permanent op te slaan.', 'succes');
+    wisselBewerkModus();
+    return;
+  }
+
+  knop.disabled = true;
+  knop.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px"></span> Opslaan…';
+
+  try {
+    const token = getToken();
+    const response = await fetch(`/api/studeren/samenvatting/${huidigeSessie._id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ samenvatting: nieuweSamenvatting })
+    });
+
+    const tekst = await response.text();
+    console.log('Server response status:', response.status);
+    console.log('Server response:', tekst);
+
+    let data;
+    try {
+      data = JSON.parse(tekst);
+    } catch (e) {
+      throw new Error(`Server gaf geen JSON terug (status ${response.status})`);
+    }
+
+    if (!data.succes) throw new Error(data.fout || 'Onbekende fout');
+
+    huidigeSessie.samenvatting = nieuweSamenvatting;
+    toonMelding('opslaan-melding', '✅ Samenvatting opgeslagen!', 'succes');
+    wisselBewerkModus();
+
+  } catch (err) {
+    console.error('Samenvatting opslaan fout:', err);
+    toonMelding('opslaan-melding', `Fout: ${err.message}`);
+  } finally {
+    knop.disabled = false;
+    knop.innerHTML = '💾 Opslaan';
+  }
+};
+
+// Sluit modals bij Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') sluitModals();
+});
 
 /** Reset de app terug naar de uploadstaat */
 const resetApp = () => {
@@ -369,7 +579,7 @@ const controleerUrlSessie = async () => {
       _id: s._id,
       bestandsnaam: s.bestandsnaam,
       titel: s.titel,
-      samenvatting: s.samenvatting,
+      samenvatting: s.samenvatting,  // Al HTML vanuit de database
       flashcards: s.flashcards.map(fc => ({ front: fc.voorkant, back: fc.achterkant })),
       quiz: s.quiz.map(q => ({
         question: q.vraag,
