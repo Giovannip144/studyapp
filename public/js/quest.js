@@ -49,6 +49,42 @@ let staat = {
   levelsGehaald: 0,
 };
 
+/**
+ * Genereer nieuwe AI-vragen voor de huidige sessie.
+ * Wordt aangeroepen via de "+ Nieuwe vragen" knop op het eindscherm.
+ * Na genereren start de quest opnieuw met de nieuwe vragen.
+ */
+const genereerNieuweVragen = async () => {
+  const knop = document.getElementById('nieuw-vragen-knop');
+  if (!knop || !staat.sessieId) return;
+
+  knop.disabled = true;
+  knop.innerHTML = '<span class="spinner" style="width:12px;height:12px;border-width:2px"></span> Genereren…';
+
+  try {
+    const data = await api(`/api/adaptief/${staat.sessieId}/genereer`, {
+      method: 'POST',
+      body: JSON.stringify({ aantalNieuw: 4 })
+    });
+
+    if (data.succes) {
+      knop.innerHTML = `✅ ${data.nieuwAantal} nieuwe vragen!`;
+      knop.style.borderColor = 'var(--q-groen)';
+      knop.style.color = 'var(--q-groen)';
+
+      // Na 1.5 seconden herstart met nieuwe vragen
+      setTimeout(() => {
+        document.getElementById('eindscherm').classList.remove('toon');
+        startQuest(staat.sessieId, staat.sessieNaam);
+      }, 1500);
+    }
+  } catch (err) {
+    knop.innerHTML = '❌ Mislukt';
+    knop.disabled = false;
+    setTimeout(() => { knop.innerHTML = '+ NIEUWE VRAGEN'; }, 2000);
+  }
+};
+
 // ─── INITIALISATIE ────────────────────────────────────────
 
 /**
@@ -92,29 +128,58 @@ const laadSessies = async () => {
 
 /**
  * Start een nieuwe Quest voor een gekozen sessie.
- * Laadt de sessie, shufflet de vragen en begint level 1.
+ * Gebruikt adaptieve vraagvolgorde — onbekende vragen komen vaker voor.
  * @param {string} id - Sessie ID
  * @param {string} naam - Sessienaam voor weergave
  */
 const startQuest = async (id, naam) => {
   try {
-    const data = await api(`/api/sessies/${id}`);
-    const sessie = data.sessie;
+    // Laad sessie + adaptieve volgorde parallel
+    const [sessieData, adaptiefData] = await Promise.all([
+      api(`/api/sessies/${id}`),
+      api(`/api/adaptief/${id}/slim`).catch(() => null)
+    ]);
+
+    const sessie = sessieData.sessie;
 
     if (!sessie.quiz || sessie.quiz.length < 3) {
       toonMelding('sessie-melding', 'Deze sessie heeft te weinig vragen voor een Quest (minimaal 3 nodig).');
       return;
     }
 
+    // Gebruik adaptieve volgorde als beschikbaar, anders gewone shuffle
+    let vragen;
+    if (adaptiefData?.vragen?.length > 0) {
+      vragen = adaptiefData.vragen.map(q => ({
+        vraag: q.vraag || q.question,
+        opties: q.opties || q.options,
+        correct: q.correct,
+        uitleg: q.uitleg || q.explanation || '',
+        index: q.index ?? 0,
+        score: q.score ?? 0,
+        gememoreerd: q.gememoreerd ?? false
+      }));
+    } else {
+      vragen = shuffleArray([...sessie.quiz.map((q, i) => ({
+        vraag: q.vraag || q.question,
+        opties: q.opties || q.options,
+        correct: q.correct,
+        uitleg: q.uitleg || q.explanation || '',
+        index: i,
+        score: 0,
+        gememoreerd: false
+      }))]);
+    }
+
+    // Tel gememoreerde vragen
+    const gememoreerd = vragen.filter(v => v.gememoreerd).length;
+    staat.gememoreerd = gememoreerd;
+    staat.totaalVragen = sessie.quiz.length;
+
     // Initialiseer spelstate
     staat.sessieId = id;
     staat.sessieNaam = naam;
-    staat.vragen = shuffleArray([...sessie.quiz.map(q => ({
-      vraag: q.vraag || q.question,
-      opties: q.opties || q.options,
-      correct: q.correct,
-      uitleg: q.uitleg || q.explanation || ''
-    }))]);
+    staat.vragen = vragen;
     staat.vraagIndex = 0;
     staat.level = 0;
     staat.levelVraagTeller = 0;
@@ -129,10 +194,8 @@ const startQuest = async (id, naam) => {
     staat.spelActief = true;
     staat.levelsGehaald = 0;
 
-    // Genereer sterren voor ruimte thema
     maakSterren();
 
-    // Verduister → toon spelscherm
     schakelOvergang(() => {
       document.getElementById('keuze-scherm').style.display = 'none';
       document.getElementById('spel-wrap').classList.add('actief');
@@ -223,17 +286,21 @@ const kiesAntwoord = (index) => {
     staat.score += totaalPunten;
     staat.munten += isBaas ? 15 : 8;
 
-    // Toon zwevende score
     toonScoreFloat(`+${totaalPunten}`, '#f5c842');
-
-    // Feedback
     toonFeedback(true, isBaas, totaalPunten, staat.combo, vraag.uitleg);
+
+    // Registreer goed antwoord voor adaptief leren (stille achtergrondaanroep)
+    if (staat.sessieId && vraag.index !== undefined) {
+      api(`/api/adaptief/${staat.sessieId}/antwoord`, {
+        method: 'POST',
+        body: JSON.stringify({ vraagIndex: vraag.index, goed: true })
+      }).catch(() => {}); // Stille fout — niet kritiek voor het spel
+    }
 
   } else {
     // 2e kans power-up?
     if (staat.heeftKans) {
       staat.heeftKans = false;
-      // Herstel de foute optie en laat speler opnieuw kiezen
       knoppen[index].classList.remove('fout');
       knoppen[index].disabled = true;
       knoppen[index].classList.add('verborgen');
@@ -248,6 +315,14 @@ const kiesAntwoord = (index) => {
     toonScoreFloat('FOUT!', '#ff4757');
     toonFeedback(false, isBaas, 0, 0, vraag.uitleg);
     updateHartjes();
+
+    // Registreer fout antwoord voor adaptief leren
+    if (staat.sessieId && vraag.index !== undefined) {
+      api(`/api/adaptief/${staat.sessieId}/antwoord`, {
+        method: 'POST',
+        body: JSON.stringify({ vraagIndex: vraag.index, goed: false })
+      }).catch(() => {});
+    }
 
     if (staat.levens <= 0) {
       setTimeout(() => gameOver(), 1800);

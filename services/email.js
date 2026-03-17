@@ -80,7 +80,7 @@ const stuurVerificatieCode = async (naarEmail, naam, code) => {
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                               <tr>
                                 <td align="center" style="background:#1e2029;border:1px solid #2a2d3a;border-radius:12px;padding:36px 20px">
-                                  <span style="font-family:'DM Sans',Arial,sans-serif;font-size:42px;font-weight:500;letter-spacing:16px;color:#c8f25a;display:block;line-height:1">${code}</span>
+                                  <span style="font-family:'DM Sans',Arial,sans-serif;font-size:30px;font-weight:700;letter-spacing:16px;color:#c8f25a;display:block;line-height:1">${code}</span>
                                   <span style="display:block;margin-top:14px;font-family:'DM Sans',Arial,sans-serif;font-size:13px;color:#8085a0;letter-spacing:0.3px">geldig voor 10 minuten &nbsp;·&nbsp; eenmalig gebruik</span>
                                 </td>
                               </tr>

@@ -9,6 +9,10 @@ const bewaker = require('./utils/bewaker');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Vertel Express dat hij achter een proxy draait (Railway, Nginx, etc.)
+// Zodat req.ip het echte gebruikers-IP geeft via X-Forwarded-For
+app.set('trust proxy', 1);
+
 // ─── MIDDLEWARE ───────────────────────────────────────────────────────────────
 
 app.use(cors());
@@ -62,6 +66,7 @@ app.use('/api/sessies',  require('./routes/sessions'));
 app.use('/api/studeren', require('./routes/study'));
 app.use('/api/reacties', require('./routes/reacties'));
 app.use('/api/scores',   require('./routes/scores'));
+app.use('/api/adaptief', require('./routes/adaptief'));
 
 // Health check
 app.get('/api/status', (req, res) => {

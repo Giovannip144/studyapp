@@ -34,28 +34,22 @@
       overflow: hidden;
     }
 
-    /* Achtergrond raster */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
       background-size: 60px 60px;
       opacity: 0.25;
       pointer-events: none;
     }
 
-    /* Rode gloed */
     body::after {
       content: '';
       position: fixed;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 600px;
-      height: 600px;
+      width: 600px; height: 600px;
       background: radial-gradient(circle, rgba(255,71,87,0.07) 0%, transparent 70%);
       pointer-events: none;
     }
@@ -78,7 +72,6 @@
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* Rode accent balk bovenaan */
     .kaart::before {
       content: '';
       position: absolute;
@@ -88,36 +81,32 @@
       border-radius: 20px 20px 0 0;
     }
 
-    .schild-wrap {
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-size: 16px;
+      color: var(--muted);
       margin-bottom: 24px;
+      letter-spacing: -0.3px;
     }
+    .logo span { color: #c8f25a; }
 
     .schild {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 80px;
-      height: 80px;
+      width: 80px; height: 80px;
       border-radius: 50%;
       background: var(--rood-zacht);
       border: 1px solid var(--rood-border);
       font-size: 36px;
+      margin-bottom: 20px;
       animation: schildPuls 2s ease-in-out infinite;
     }
 
     @keyframes schildPuls {
       0%, 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.2); }
-      50% { box-shadow: 0 0 0 12px rgba(255,71,87,0); }
+      50% { box-shadow: 0 0 0 14px rgba(255,71,87,0); }
     }
-
-    .logo {
-      font-family: 'Fraunces', serif;
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 20px;
-      letter-spacing: -0.3px;
-    }
-    .logo span { color: #c8f25a; }
 
     h1 {
       font-family: 'Fraunces', serif;
@@ -126,22 +115,33 @@
       color: var(--rood);
       letter-spacing: -0.5px;
       margin-bottom: 10px;
-      line-height: 1.2;
     }
 
     .omschrijving {
-      font-size: 15px;
+      font-size: 14px;
       color: var(--muted);
       line-height: 1.7;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
-    /* Info blokken */
+    .reden-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
     .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-bottom: 28px;
+      margin-bottom: 20px;
     }
 
     .info-blok {
@@ -160,54 +160,15 @@
       margin-bottom: 4px;
     }
 
-    .info-waarde {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-    }
-
+    .info-waarde { font-size: 14px; font-weight: 500; }
     .info-waarde.rood { color: var(--rood); }
 
-    /* Timer */
-    .timer-wrap {
-      background: var(--rood-zacht);
-      border: 1px solid var(--rood-border);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .timer-icon { font-size: 22px; flex-shrink: 0; }
-
-    .timer-tekst {
-      flex: 1;
-      text-align: left;
-    }
-
-    .timer-label {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 2px;
-    }
-
-    .timer-countdown {
-      font-family: 'Fraunces', serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--rood);
-      letter-spacing: 1px;
-    }
-
-    /* Voortgangsbalk */
     .voortgang-balk {
       height: 4px;
       background: var(--border);
       border-radius: 2px;
       overflow: hidden;
-      margin-bottom: 28px;
+      margin-bottom: 20px;
     }
 
     .voortgang-vulling {
@@ -215,27 +176,29 @@
       background: linear-gradient(90deg, var(--rood), #ff6b81);
       border-radius: 2px;
       transition: width 1s linear;
+      width: 100%;
     }
 
-    /* Reden badge */
-    .reden-badge {
-      display: inline-flex;
+    .timer-wrap {
+      background: var(--rood-zacht);
+      border: 1px solid var(--rood-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 28px;
+      gap: 14px;
     }
 
-    /* Wat nu knop */
+    .timer-icon { font-size: 22px; flex-shrink: 0; }
+    .timer-tekst { flex: 1; text-align: left; }
+    .timer-label { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+    .timer-countdown { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: var(--rood); letter-spacing: 2px; }
+
     .wat-nu {
       font-size: 13px;
       color: var(--muted);
-      line-height: 1.6;
+      line-height: 1.65;
       margin-bottom: 24px;
       padding: 14px 16px;
       background: var(--surface2);
@@ -243,10 +206,8 @@
       border: 1px solid var(--border);
       text-align: left;
     }
-
     .wat-nu strong { color: var(--text); font-weight: 500; }
 
-    /* Footer links */
     .footer-links {
       display: flex;
       gap: 16px;
@@ -260,16 +221,13 @@
       text-decoration: none;
       transition: color 0.2s;
     }
-
     .footer-link:hover { color: var(--text); }
 
-    /* Fout code rechtsonder */
     .fout-code {
       position: absolute;
-      bottom: 16px;
-      right: 20px;
+      bottom: 14px; right: 18px;
       font-size: 10px;
-      color: rgba(128,133,160,0.3);
+      color: rgba(128,133,160,0.25);
       font-family: monospace;
       letter-spacing: 1px;
     }
@@ -278,19 +236,10 @@
 <body>
   <div class="kaart">
     <div class="logo">Study<span>Flow</span></div>
-
-    <div class="schild-wrap">
-      <div class="schild">🛡️</div>
-    </div>
-
+    <div class="schild">🛡️</div>
     <h1>Toegang geblokkeerd</h1>
-    <p class="omschrijving" id="omschrijving">
-      Jouw IP-adres is tijdelijk geblokkeerd vanwege verdachte activiteit.
-    </p>
-
-    <div class="reden-badge">
-      ⚠️ <span id="reden-tekst">Verdachte activiteit gedetecteerd</span>
-    </div>
+    <p class="omschrijving" id="omschrijving">Jouw IP-adres is tijdelijk geblokkeerd vanwege verdachte activiteit.</p>
+    <div class="reden-badge">⚠️ <span id="reden-tekst">Verdachte activiteit gedetecteerd</span></div>
 
     <div class="info-grid">
       <div class="info-blok">
@@ -303,17 +252,15 @@
       </div>
     </div>
 
-    <div class="voortgang-wrap">
-      <div class="voortgang-balk">
-        <div class="voortgang-vulling" id="voortgang" style="width:100%"></div>
-      </div>
+    <div class="voortgang-balk">
+      <div class="voortgang-vulling" id="voortgang"></div>
     </div>
 
     <div class="timer-wrap">
       <span class="timer-icon">⏱️</span>
       <div class="timer-tekst">
         <div class="timer-label">Blokkade verloopt over</div>
-        <div class="timer-countdown" id="countdown">—</div>
+        <div class="timer-countdown" id="countdown">--:--</div>
       </div>
     </div>
 
@@ -324,66 +271,62 @@
 
     <div class="footer-links">
       <a href="/" class="footer-link">← Terug naar login</a>
-      <a href="mailto:support@studyflow.nl" class="footer-link">Contact support</a>
     </div>
 
     <div class="fout-code">ERR_ACCESS_BLOCKED</div>
   </div>
 
   <script>
-    // Haal blokkadeinfo op uit URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const tot = parseInt(params.get('tot') || '0');
-    const reden = params.get('reden') || 'Verdachte activiteit';
-    const minuten = parseInt(params.get('min') || '30');
+    (function() {
+      var blokkade = window.__BLOKKADE__ || {};
+      var tot = blokkade.tot || (Date.now() + 30 * 60 * 1000);
+      var reden = blokkade.reden || 'Verdachte activiteit';
+      var minuten = blokkade.min || 30;
+      var totaalDuur = minuten * 60 * 1000;
 
-    // Vul reden in
-    const redenEl = document.getElementById('reden-tekst');
-    if (reden.toLowerCase().includes('brute')) {
-      redenEl.textContent = 'Te veel mislukte inlogpogingen';
-      document.getElementById('omschrijving').textContent =
-        'Je IP-adres is tijdelijk geblokkeerd omdat er te veel mislukte inlogpogingen zijn gedetecteerd.';
-    } else if (reden.toLowerCase().includes('ddos') || reden.toLowerCase().includes('rate')) {
-      redenEl.textContent = 'Te veel verzoeken verstuurd';
-      document.getElementById('omschrijving').textContent =
-        'Je IP-adres is tijdelijk geblokkeerd omdat er abnormaal veel verzoeken zijn verstuurd.';
-    } else {
-      redenEl.textContent = reden;
-    }
+      // Reden tekst instellen
+      var redenEl = document.getElementById('reden-tekst');
+      var omschrijvingEl = document.getElementById('omschrijving');
+      var r = reden.toLowerCase();
 
-    // Countdown timer
-    const countdownEl = document.getElementById('countdown');
-    const vrijOverEl = document.getElementById('vrij-over');
-    const voortgangEl = document.getElementById('voortgang');
-
-    const totMs = tot || (Date.now() + minuten * 60 * 1000);
-    const totaalDuur = minuten * 60 * 1000;
-
-    const updateTimer = () => {
-      const nu = Date.now();
-      const restMs = Math.max(0, totMs - nu);
-      const restSec = Math.ceil(restMs / 1000);
-      const restMin = Math.floor(restSec / 60);
-      const sec = restSec % 60;
-
-      // Countdown tekst
-      countdownEl.textContent = `${String(restMin).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-      vrijOverEl.textContent = restMin > 0 ? `${restMin} min` : `${restSec} sec`;
-
-      // Voortgangsbalk (loopt leeg)
-      const pct = (restMs / totaalDuur) * 100;
-      voortgangEl.style.width = `${Math.max(0, pct)}%`;
-
-      // Automatisch herladen als timer op 0 is
-      if (restMs <= 0) {
-        countdownEl.textContent = '00:00';
-        vrijOverEl.textContent = 'Nu';
-        setTimeout(() => window.location.href = '/', 1500);
+      if (r.includes('brute') || r.includes('mislukt') || r.includes('login')) {
+        redenEl.textContent = 'Te veel mislukte inlogpogingen';
+        omschrijvingEl.textContent = 'Je IP-adres is tijdelijk geblokkeerd omdat er te veel mislukte inlogpogingen zijn gedetecteerd.';
+      } else if (r.includes('ddos') || r.includes('rate') || r.includes('verzoek')) {
+        redenEl.textContent = 'Te veel verzoeken verstuurd';
+        omschrijvingEl.textContent = 'Je IP-adres is tijdelijk geblokkeerd omdat er abnormaal veel verzoeken zijn verstuurd.';
+      } else {
+        redenEl.textContent = reden;
       }
-    };
 
-    updateTimer();
-    setInterval(updateTimer, 1000);
+      // Timer
+      var countdownEl = document.getElementById('countdown');
+      var vrijOverEl = document.getElementById('vrij-over');
+      var voortgangEl = document.getElementById('voortgang');
+
+      function updateTimer() {
+        var nu = Date.now();
+        var restMs = Math.max(0, tot - nu);
+        var restSec = Math.ceil(restMs / 1000);
+        var restMin = Math.floor(restSec / 60);
+        var sec = restSec % 60;
+
+        countdownEl.textContent = String(restMin).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+        vrijOverEl.textContent = restMin > 0 ? restMin + ' min' : restSec + ' sec';
+
+        var pct = (restMs / totaalDuur) * 100;
+        voortgangEl.style.width = Math.max(0, pct) + '%';
+
+        if (restMs <= 0) {
+          countdownEl.textContent = '00:00';
+          vrijOverEl.textContent = 'Nu vrij!';
+          setTimeout(function() { window.location.href = '/'; }, 2000);
+        }
+      }
+
+      updateTimer();
+      setInterval(updateTimer, 1000);
+    })();
   </script>
 </body>
 </html>

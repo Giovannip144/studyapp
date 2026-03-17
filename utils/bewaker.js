@@ -2,6 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const logger = require('./logger');
 
+// Lees de blokkadepagina HTML eenmalig in bij opstarten
+const BLOKKADE_HTML_PAD = path.join(__dirname, '..', 'public', 'geblokkeerd.html');
+let blokkadeHTML = '';
+try {
+  blokkadeHTML = fs.readFileSync(BLOKKADE_HTML_PAD, 'utf8');
+} catch (e) {
+  blokkadeHTML = `<!DOCTYPE html><html><body style="background:#0e0f14;color:#ff4757;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><h1>🛡️ Toegang geblokkeerd</h1></body></html>`;
+}
+
 /**
  * bewaker.js – Automatische beveiligingsbewaker
  *
@@ -35,9 +44,7 @@ const CONFIG = {
   BLOKKADE_DUUR_VERDACHT: 15 * 60 * 1000, // 15 minuten bij verdacht gedrag
 
   // Whitelist — deze IPs worden nooit geblokkeerd
-  // WHITELIST: ['127.0.0.1', '::1', '::ffff:127.0.0.1'],
-  // Naar dit (leeg — geen whitelist):
-WHITELIST: [],
+  WHITELIST: [],
 };
 
 // ─── OPSLAG ───────────────────────────────────────────────
@@ -269,6 +276,31 @@ const middleware = (req, res, next) => {
   // Whitelist — altijd doorlaten
   if (CONFIG.WHITELIST.includes(ip)) return next();
 
+  // Statische bestanden altijd doorlaten
+  if (req.path.startsWith('/css') || req.path.startsWith('/js') || req.path === '/geblokkeerd') {
+    return next();
+  }
+
+  const isAPI = req.path.startsWith('/api/');
+  const isBrowser = !isAPI && (req.headers.accept?.includes('text/html') || req.headers.accept?.includes('*/*'));
+
+  /**
+   * Stuur de blokkadepagina direct terug als HTML.
+   * Injecteert de blokkadeinfo direct in de HTML zodat de timer werkt.
+   */
+  const stuurBlokkadePagina = (restMin, tot, reden) => {
+    // Inject blokkade data in de HTML via script tag
+    const script = `<script>
+      window.__BLOKKADE__ = {
+        tot: ${tot},
+        reden: ${JSON.stringify(reden)},
+        min: ${restMin}
+      };
+    </script>`;
+    const html = blokkadeHTML.replace('</head>', `${script}</head>`);
+    res.status(403).set('Content-Type', 'text/html').send(html);
+  };
+
   // Check blokkadelijst
   const { geblokkeerd, info } = isGeblokkeerd(ip);
   if (geblokkeerd) {
@@ -276,6 +308,8 @@ const middleware = (req, res, next) => {
     const restMin = Math.ceil(restMs / 60000);
 
     logger.warn('BEWAKER', 'Geblokkeerd IP probeert toegang', { ip, reden: info.reden, nogMinuten: restMin });
+
+    if (isBrowser) return stuurBlokkadePagina(restMin, info.tot, info.reden);
 
     return res.status(403).json({
       succes: false,
@@ -287,11 +321,12 @@ const middleware = (req, res, next) => {
   // Rate limiting check
   const { overschreden, reden } = controleerRateLimit(ip);
   if (overschreden) {
-    const duur = reden.includes('DDoS')
-      ? CONFIG.BLOKKADE_DUUR_DDOS
-      : CONFIG.BLOKKADE_DUUR_VERDACHT;
-
+    const duur = reden.includes('DDoS') ? CONFIG.BLOKKADE_DUUR_DDOS : CONFIG.BLOKKADE_DUUR_VERDACHT;
     blokkeerIP(ip, reden, duur);
+    const tot = Date.now() + duur;
+    const restMin = Math.ceil(duur / 60000);
+
+    if (isBrowser) return stuurBlokkadePagina(restMin, tot, reden);
 
     return res.status(429).json({
       succes: false,

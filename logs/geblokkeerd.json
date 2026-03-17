@@ -1,8 +1,8 @@
 {
   "::1": {
-    "reden": "DDoS vermoeden: 21 requests/seconde",
-    "tot": 1773694335877,
-    "geblokkerdOp": "2026-03-16T19:52:15.877Z",
-    "duurMinuten": 60
+    "reden": "Brute force: 5 mislukte logins in 10 minuten",
+    "tot": 1773774176832,
+    "geblokkerdOp": "2026-03-17T18:32:56.832Z",
+    "duurMinuten": 30
   }
 }
